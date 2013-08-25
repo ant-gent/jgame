@@ -3,7 +3,7 @@ package jgame;
 public class Background {
 
 	private int bgX, bgY, speedX;
-	private float scrollRate = 1.25f;
+	private float scrollRate = 3.25f;
 	
 	
 	public int getBgX() {

@@ -2,6 +2,7 @@ package jgame;
 
 import java.applet.Applet;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -47,6 +48,10 @@ public class StartingClass extends Applet implements Runnable {
 
 	private Controller kb;
 
+	private List<Tile> tiles;
+
+	public static Image tileDirt, tileOcean;
+
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
@@ -63,6 +68,7 @@ public class StartingClass extends Applet implements Runnable {
 		frame.setTitle("Q-Bot Alpha");
 		frame.setResizable(false);
 		URL base = null;
+		tiles = new ArrayList<Tile>();
 
 		try {
 			base = getDocumentBase();
@@ -78,6 +84,9 @@ public class StartingClass extends Applet implements Runnable {
 			heliboy4 = getImage(base, "../data/heliboy4.png");
 			heliboy5 = getImage(base, "../data/heliboy5.png");
 
+			tileDirt = getImage(base, "../data/tiledirt.png");
+			tileOcean = getImage(base, "../data/tileocean.png");
+
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
@@ -88,7 +97,7 @@ public class StartingClass extends Applet implements Runnable {
 		anim.addFrame(character2, 50);
 		anim.addFrame(character3, 50);
 		anim.addFrame(character2, 50);
-		
+
 		hanim = new Animation();
 		hanim.addFrame(heliboy, 100);
 		hanim.addFrame(heliboy2, 100);
@@ -98,7 +107,7 @@ public class StartingClass extends Applet implements Runnable {
 		hanim.addFrame(heliboy4, 100);
 		hanim.addFrame(heliboy3, 100);
 		hanim.addFrame(heliboy2, 100);
-		
+
 		currentSprite = anim.getImage();
 
 		// Controller set-up
@@ -164,12 +173,15 @@ public class StartingClass extends Applet implements Runnable {
 		g.drawImage(background, bg1.getScrolledX(), bg1.getScrolledY(), this);
 		g.drawImage(background, bg2.getScrolledX(), bg1.getScrolledY(), this);
 
+		paintTiles(g);
+		
 		g.drawImage(currentSprite, robot.getCenterX() - 61,
 				robot.getCenterY() - 63, this);
 
 		for (Enemy e : enemies) {
 			if (e instanceof Heliboy) {
-				g.drawImage(hanim.getImage(), e.getCenterX(), e.getCenterY(), this);
+				g.drawImage(hanim.getImage(), e.getCenterX(), e.getCenterY(),
+						this);
 			}
 		}
 
@@ -187,6 +199,8 @@ public class StartingClass extends Applet implements Runnable {
 
 			pollInput();
 
+			updateTiles();
+			
 			robot.update();
 
 			if (robot.isJumped()) {
@@ -209,7 +223,7 @@ public class StartingClass extends Applet implements Runnable {
 
 			bg1.update();
 			bg2.update();
-			
+
 			animate();
 
 			for (Enemy en : enemies) {
@@ -256,12 +270,12 @@ public class StartingClass extends Applet implements Runnable {
 
 			} else if (key.equals(Key.DOWN)) {
 
-				if(event.getValue() == 1.0f){
-					
-				} else if (event.getValue() == 0.0f){
+				if (event.getValue() == 1.0f) {
+
+				} else if (event.getValue() == 0.0f) {
 					currentSprite = anim.getImage();
 				}
-				
+
 			} else if (key.equals(Key.LEFT)) {
 				if (event.getValue() == 1.0f) {
 					robot.moveLeft();
@@ -303,6 +317,21 @@ public class StartingClass extends Applet implements Runnable {
 		bg1 = new Background(0, 0);
 		bg2 = new Background(2160, 0);
 
+		// Initialize tiles
+		for(int i = 0; i< 200; i++){
+			for(int j = 0; j < 12; j++){
+				
+				if(j == 11){
+					Tile t = new Tile(i,j,2);
+					tiles.add(t);
+				} if (j == 10){
+					Tile t = new Tile(i,j,1);
+					tiles.add(t);
+				}
+				
+			}
+		}
+		
 		robot = new Robot();
 
 		enemies.add(new Heliboy(340, 220));
@@ -332,6 +361,17 @@ public class StartingClass extends Applet implements Runnable {
 		paint(second);
 
 		g.drawImage(image, 0, 0, this);
+	}
+	
+	private void updateTiles(){
+		for(Tile t : tiles)
+			t.update();
+	}
+	
+	private void paintTiles(Graphics g){
+		for(Tile t : tiles){
+			g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
+		}
 	}
 
 }
