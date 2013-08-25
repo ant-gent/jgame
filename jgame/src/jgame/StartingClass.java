@@ -14,6 +14,7 @@ import net.java.games.input.*;
 import net.java.games.input.Component.Identifier;
 import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller.Type;
+import jgame.framework.Animation;
 
 public class StartingClass extends Applet implements Runnable {
 
@@ -38,9 +39,11 @@ public class StartingClass extends Applet implements Runnable {
 	private Robot robot;
 	private Image image;
 	private Graphics second;
-	private Image character, characterDown, characterJump, currentSprite,
-			background, heliboy;
+	private Image currentSprite, character, character2, character3,
+			characterDown, characterJump, background, heliboy, heliboy2,
+			heliboy3, heliboy4, heliboy5;
 	private List<Enemy> enemies = new ArrayList<Enemy>();
+	private Animation anim, hanim;
 
 	private Controller kb;
 
@@ -64,16 +67,39 @@ public class StartingClass extends Applet implements Runnable {
 		try {
 			base = getDocumentBase();
 			character = getImage(base, "../data/character.png");
+			character2 = getImage(base, "../data/character2.png");
+			character3 = getImage(base, "../data/character3.png");
 			background = getImage(base, "../data/background.png");
 			characterDown = getImage(base, "../data/down.png");
 			characterJump = getImage(base, "../data/jumped.png");
 			heliboy = getImage(base, "../data/heliboy.png");
+			heliboy2 = getImage(base, "../data/heliboy2.png");
+			heliboy3 = getImage(base, "../data/heliboy3.png");
+			heliboy4 = getImage(base, "../data/heliboy4.png");
+			heliboy5 = getImage(base, "../data/heliboy5.png");
+
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
 
-		currentSprite = character;
+		anim = new Animation();
+		anim.addFrame(character, 1250);
+		anim.addFrame(character2, 50);
+		anim.addFrame(character3, 50);
+		anim.addFrame(character2, 50);
+		
+		hanim = new Animation();
+		hanim.addFrame(heliboy, 100);
+		hanim.addFrame(heliboy2, 100);
+		hanim.addFrame(heliboy3, 100);
+		hanim.addFrame(heliboy4, 100);
+		hanim.addFrame(heliboy5, 100);
+		hanim.addFrame(heliboy4, 100);
+		hanim.addFrame(heliboy3, 100);
+		hanim.addFrame(heliboy2, 100);
+		
+		currentSprite = anim.getImage();
 
 		// Controller set-up
 		Controller[] ca = ControllerEnvironment.getDefaultEnvironment()
@@ -143,7 +169,7 @@ public class StartingClass extends Applet implements Runnable {
 
 		for (Enemy e : enemies) {
 			if (e instanceof Heliboy) {
-				g.drawImage(heliboy, e.getCenterX(), e.getCenterY(), this);
+				g.drawImage(hanim.getImage(), e.getCenterX(), e.getCenterY(), this);
 			}
 		}
 
@@ -166,7 +192,7 @@ public class StartingClass extends Applet implements Runnable {
 			if (robot.isJumped()) {
 				currentSprite = characterJump;
 			} else if (!robot.isJumped() && !robot.isDucked()) {
-				currentSprite = character;
+				currentSprite = anim.getImage();
 			}
 
 			List<Projectile> toRemove = new ArrayList<Projectile>();
@@ -183,6 +209,8 @@ public class StartingClass extends Applet implements Runnable {
 
 			bg1.update();
 			bg2.update();
+			
+			animate();
 
 			for (Enemy en : enemies) {
 				en.update();
@@ -207,6 +235,11 @@ public class StartingClass extends Applet implements Runnable {
 
 	}
 
+	private void animate() {
+		anim.update(10);
+		hanim.update(50);
+	}
+
 	private void pollInput() {
 
 		kb.poll();
@@ -223,6 +256,12 @@ public class StartingClass extends Applet implements Runnable {
 
 			} else if (key.equals(Key.DOWN)) {
 
+				if(event.getValue() == 1.0f){
+					
+				} else if (event.getValue() == 0.0f){
+					currentSprite = anim.getImage();
+				}
+				
 			} else if (key.equals(Key.LEFT)) {
 				if (event.getValue() == 1.0f) {
 					robot.moveLeft();
@@ -240,11 +279,11 @@ public class StartingClass extends Applet implements Runnable {
 					}
 				}
 			} else if (key.equals(Key.SPACE)) {
-				if(event.getValue() == 1.0f){
+				if (event.getValue() == 1.0f) {
 					robot.jump();
 				}
 			} else if (key.equals(Key.LCONTROL)) {
-				if(event.getValue() == 1.0f){
+				if (event.getValue() == 1.0f) {
 					robot.shoot();
 				}
 			} else if (key.equals(Key.ESCAPE)) {
