@@ -1,10 +1,19 @@
 package jgame;
 
+import java.awt.Rectangle;
+
 public abstract class Enemy {
 
 	private int maxHealth, currentHealth, power, speedX, centerX, centerY;
 	private Background bg = StartingClass.getBg1();
+	private Rectangle r = new Rectangle();
 
+	public Rectangle getR() {
+		return r;
+	}
+	public void setR(Rectangle r) {
+		this.r = r;
+	}
 	public abstract void attack();
 	public abstract void die();
 
@@ -68,5 +77,9 @@ public abstract class Enemy {
 		centerX += speedX;
 		speedX = bg.getSpeedX();
 	}
+	
+	public abstract void hit();
+	
+	public abstract boolean isDead();
 	
 }

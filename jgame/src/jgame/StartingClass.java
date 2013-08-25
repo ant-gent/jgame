@@ -6,6 +6,7 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedReader;
@@ -13,7 +14,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import net.java.games.input.*;
 import net.java.games.input.Component.Identifier;
 import net.java.games.input.Component.Identifier.Key;
@@ -40,20 +45,26 @@ public class StartingClass extends Applet implements Runnable {
 
 	private Thread thread;
 	private boolean stop = false;
-	private Robot robot;
+	private static Robot robot;
 	private Image image;
 	private Graphics second;
 	private Image currentSprite, character, character2, character3,
 			characterDown, characterJump, background, heliboy, heliboy2,
 			heliboy3, heliboy4, heliboy5;
-	private List<Enemy> enemies = new ArrayList<Enemy>();
+	public static List<Enemy> enemies = new ArrayList<Enemy>();
 	private Animation anim, hanim;
 
 	private Controller kb;
 
 	private List<Tile> tiles;
 
-    public static Image tileOcean, tilegrassTop, tilegrassBot, tilegrassLeft, tilegrassRight, tileDirt;
+	public static Set<Rectangle> collisions = new HashSet<Rectangle>();
+
+	public static Image tileOcean, tilegrassTop, tilegrassBot, tilegrassLeft,
+			tilegrassRight, tileDirt;
+
+	private List<Rectangle> colRects = new ArrayList<Rectangle>();
+	private boolean displayColRects = false;
 
 	@Override
 	public void destroy() {
@@ -89,11 +100,10 @@ public class StartingClass extends Applet implements Runnable {
 
 			tileDirt = getImage(base, "../data/tiledirt.png");
 			tileOcean = getImage(base, "../data/tileocean.png");
-	        tilegrassTop = getImage(base, "../data/tilegrasstop.png");
-	        tilegrassBot = getImage(base, "../data/tilegrassbot.png");
-	        tilegrassLeft = getImage(base, "../data/tilegrassleft.png");
-	        tilegrassRight = getImage(base, "../data/tilegrassright.png");
-
+			tilegrassTop = getImage(base, "../data/tilegrasstop.png");
+			tilegrassBot = getImage(base, "../data/tilegrassbot.png");
+			tilegrassLeft = getImage(base, "../data/tilegrassleft.png");
+			tilegrassRight = getImage(base, "../data/tilegrassright.png");
 
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
@@ -178,14 +188,18 @@ public class StartingClass extends Applet implements Runnable {
 	@Override
 	public void paint(Graphics g) {
 
+		// Background
 		g.drawImage(background, bg1.getScrolledX(), bg1.getScrolledY(), this);
 		g.drawImage(background, bg2.getScrolledX(), bg1.getScrolledY(), this);
 
+		// Tiles
 		paintTiles(g);
-		
+
+		// Robot
 		g.drawImage(currentSprite, robot.getCenterX() - 61,
 				robot.getCenterY() - 63, this);
 
+		// Enemies
 		for (Enemy e : enemies) {
 			if (e instanceof Heliboy) {
 				g.drawImage(hanim.getImage(), e.getCenterX(), e.getCenterY(),
@@ -193,11 +207,35 @@ public class StartingClass extends Applet implements Runnable {
 			}
 		}
 
+		// Projectiles
 		for (Projectile p : robot.getProjectiles()) {
 			g.setColor(Color.YELLOW);
 			g.fillRect(p.getX(), p.getY(), 10, 5);
 		}
 
+		// Debug info : colision rects
+		if (displayColRects) {
+			drawColRects(g);
+		}
+
+	}
+
+	private void drawColRects(Graphics g) {
+		for (Rectangle r : colRects) {
+
+			if (r == null) {
+				continue;
+			}
+
+			if (collisions.contains(r)) {
+				g.setColor(Color.RED);
+			} else {
+				g.setColor(Color.BLACK);
+			}
+			g.drawRect((int) r.getX(), (int) r.getY(), (int) r.getWidth(),
+					(int) r.getHeight());
+
+		}
 	}
 
 	@Override
@@ -208,7 +246,7 @@ public class StartingClass extends Applet implements Runnable {
 			pollInput();
 
 			updateTiles();
-			
+
 			robot.update();
 
 			if (robot.isJumped()) {
@@ -269,9 +307,6 @@ public class StartingClass extends Applet implements Runnable {
 		Event event = new Event();
 
 		while (queue.getNextEvent(event)) {
-			System.out.println(event.getComponent().getName() + " = "
-					+ event.getValue());
-
 			Key key = (Key) event.getComponent().getIdentifier();
 
 			if (key.equals(Key.UP)) {
@@ -312,6 +347,10 @@ public class StartingClass extends Applet implements Runnable {
 				if (event.getValue() == 1.0f) {
 					System.exit(0);
 				}
+			} else if (key.equals(Key.C)) {
+				if (event.getValue() == 1.0f) {
+					displayColRects = !displayColRects;
+				}
 			}
 
 		}
@@ -325,62 +364,73 @@ public class StartingClass extends Applet implements Runnable {
 		bg1 = new Background(0, 0);
 		bg2 = new Background(2160, 0);
 
-		try{
+		robot = new Robot();
+
+		colRects.add(robot.footleft);
+		colRects.add(robot.footright);
+		colRects.add(robot.rect);
+		colRects.add(robot.rect2);
+		colRects.add(robot.rect3);
+		colRects.add(robot.rect4);
+
+		try {
 			loadMap("../data/map1.txt");
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
-		robot = new Robot();
 
 		enemies.add(new Heliboy(340, 220));
 		enemies.add(new Heliboy(700, 185));
 		enemies.add(new Heliboy(850, 185));
 		enemies.add(new Heliboy(980, 185));
 
+		for (Enemy e : enemies) {
+			colRects.add(e.getR());
+		}
+
 		thread = new Thread(this);
 		thread.start();
 	}
 
 	private void loadMap(String filename) throws IOException {
-		
+
 		List<String> lines = new ArrayList<String>();
-		
+
 		int width = 0;
 		int height = 0;
-		
+
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
-		
+
 		String line;
-		
-		while((line = reader.readLine()) != null){
-			
-			if(!line.startsWith("!")){
+
+		while ((line = reader.readLine()) != null) {
+
+			if (!line.startsWith("!")) {
 				lines.add(line);
 				width = Math.max(width, line.length());
 			}
-			
+
 		}
 		reader.close();
-		
+
 		height = lines.size();
-		
-		for(int j = 0; j < height; j++){
+
+		for (int j = 0; j < height; j++) {
 			String currentLine = lines.get(j);
-			
-			for(int i=0; i<width; i++){
-				
-				if(i<currentLine.length()){
+
+			for (int i = 0; i < width; i++) {
+
+				if (i < currentLine.length()) {
 					int type = Character.getNumericValue(currentLine.charAt(i));
 					Tile t = new Tile(i, j, type);
 					tiles.add(t);
 				}
-				
+
 			}
-			
+
 		}
-		
+
 	}
 
 	@Override
@@ -402,16 +452,22 @@ public class StartingClass extends Applet implements Runnable {
 
 		g.drawImage(image, 0, 0, this);
 	}
-	
-	private void updateTiles(){
-		for(Tile t : tiles)
+
+	private void updateTiles() {
+		collisions.clear();
+
+		for (Tile t : tiles)
 			t.update();
 	}
-	
-	private void paintTiles(Graphics g){
-		for(Tile t : tiles){
+
+	private void paintTiles(Graphics g) {
+		for (Tile t : tiles) {
 			g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
 		}
+	}
+
+	public static Robot getRobot() {
+		return robot;
 	}
 
 }

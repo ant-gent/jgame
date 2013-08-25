@@ -1,15 +1,21 @@
 package jgame;
 
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Projectile {
 
 	private int x, y, speedX;
 	private boolean visible;
+	private Rectangle r;
 
 	public Projectile(int startX, int startY) {
 		x = startX;
 		y = startY;
 		speedX = 10;
 		visible = true;
+		r = new Rectangle(x, y, 10, 5);
 	}
 
 	public int getSpeedX() {
@@ -49,8 +55,34 @@ public class Projectile {
 
 		if (x > 800) {
 			visible = false;
+		} else if (visible) {
+			checkCollision(StartingClass.enemies);
 		}
+		
+		
+		r = new Rectangle(x, y, 10, 5);
 
+	}
+
+	private void checkCollision(List<Enemy> enemies) {
+
+		List<Enemy> deadEnemies = new ArrayList<Enemy>();
+		
+		for(Enemy e : enemies){
+			if(r.intersects(e.getR())){
+				e.hit();
+				visible = false;
+				if(e.isDead()){
+					deadEnemies.add(e);
+				}
+			}
+		}
+		
+		for(Enemy e : deadEnemies){
+			enemies.remove(e);
+		}
+		
+		
 	}
 
 }
