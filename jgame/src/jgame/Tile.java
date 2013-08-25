@@ -20,7 +20,19 @@ public class Tile {
 			tileImage = StartingClass.tileOcean;
 			break;
 		case 2:
+			tileImage = StartingClass.tilegrassBot;
+			break;
+		case 5:
 			tileImage = StartingClass.tileDirt;
+			break;
+		case 6:
+			tileImage = StartingClass.tilegrassRight;
+			break;
+		case 8:
+			tileImage = StartingClass.tilegrassTop;
+			break;
+		case 4:
+			tileImage = StartingClass.tilegrassLeft;
 			break;
 		}
 		
@@ -35,7 +47,7 @@ public class Tile {
 				speedX = -2;
 			}
 			break;
-		case 2:
+		default:
 			speedX = bg.getSpeedX();
 			break;
 		}

@@ -8,6 +8,9 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class StartingClass extends Applet implements Runnable {
 
 	private List<Tile> tiles;
 
-	public static Image tileDirt, tileOcean;
+    public static Image tileOcean, tilegrassTop, tilegrassBot, tilegrassLeft, tilegrassRight, tileDirt;
 
 	@Override
 	public void destroy() {
@@ -86,6 +89,11 @@ public class StartingClass extends Applet implements Runnable {
 
 			tileDirt = getImage(base, "../data/tiledirt.png");
 			tileOcean = getImage(base, "../data/tileocean.png");
+	        tilegrassTop = getImage(base, "../data/tilegrasstop.png");
+	        tilegrassBot = getImage(base, "../data/tilegrassbot.png");
+	        tilegrassLeft = getImage(base, "../data/tilegrassleft.png");
+	        tilegrassRight = getImage(base, "../data/tilegrassright.png");
+
 
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
@@ -317,19 +325,11 @@ public class StartingClass extends Applet implements Runnable {
 		bg1 = new Background(0, 0);
 		bg2 = new Background(2160, 0);
 
-		// Initialize tiles
-		for(int i = 0; i< 200; i++){
-			for(int j = 0; j < 12; j++){
-				
-				if(j == 11){
-					Tile t = new Tile(i,j,2);
-					tiles.add(t);
-				} if (j == 10){
-					Tile t = new Tile(i,j,1);
-					tiles.add(t);
-				}
-				
-			}
+		try{
+			loadMap("../data/map1.txt");
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
 		}
 		
 		robot = new Robot();
@@ -341,6 +341,46 @@ public class StartingClass extends Applet implements Runnable {
 
 		thread = new Thread(this);
 		thread.start();
+	}
+
+	private void loadMap(String filename) throws IOException {
+		
+		List<String> lines = new ArrayList<String>();
+		
+		int width = 0;
+		int height = 0;
+		
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		
+		String line;
+		
+		while((line = reader.readLine()) != null){
+			
+			if(!line.startsWith("!")){
+				lines.add(line);
+				width = Math.max(width, line.length());
+			}
+			
+		}
+		reader.close();
+		
+		height = lines.size();
+		
+		for(int j = 0; j < height; j++){
+			String currentLine = lines.get(j);
+			
+			for(int i=0; i<width; i++){
+				
+				if(i<currentLine.length()){
+					int type = Character.getNumericValue(currentLine.charAt(i));
+					Tile t = new Tile(i, j, type);
+					tiles.add(t);
+				}
+				
+			}
+			
+		}
+		
 	}
 
 	@Override
