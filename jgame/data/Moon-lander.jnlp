@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jnlp codebase="http://www.gametutorial.net/games-showcase/Moon-lander/" href="Moon-lander.jnlp" spec="1.0+">
+    <information>
+        <title>Moon lander</title>
+        <vendor>www.gametutorial.net</vendor>
+        <homepage href="www.gametutorial.net"/>
+        <description>The goal of this game is to land on the landing area as fast as possible.</description>
+        <description kind="short">Moon lander</description>
+        
+        
+    <offline-allowed/>
+</information>
+    <update check="background"/>
+    <security>
+<all-permissions/>
+</security>
+    <resources>
+        <j2se version="1.6+"/>
+        <jar href="Moon-lander.jar" main="true"/>
+        
+        
+    </resources>
+    <application-desc main-class="moon_lander.Window">
+        
+    </application-desc>
+</jnlp>
