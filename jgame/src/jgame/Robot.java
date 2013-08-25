@@ -5,6 +5,10 @@ import java.util.List;
 
 public class Robot {
 
+	private enum State {
+		MOVINGLEFT, MOVINGRIGHT, JUMPING, STOPPED
+	}
+
 	private Background bg1 = StartingClass.getBg1();
 	private Background bg2 = StartingClass.getBg2();
 
@@ -12,6 +16,7 @@ public class Robot {
 	final int MOVESPEED = 5;
 	final int GROUND = 382;
 
+	private State state = State.STOPPED;
 	private int centerX = 100;
 
 	private int centerY = GROUND;
@@ -20,7 +25,7 @@ public class Robot {
 	private boolean movingLeft = false;
 	private boolean movingRight = false;
 	private boolean ducked = false;
-	
+
 	private List<Projectile> projectiles = new ArrayList<Projectile>();
 
 	private int speedX = 0;
@@ -42,7 +47,7 @@ public class Robot {
 	public boolean isDucked() {
 		return ducked;
 	}
-	
+
 	public boolean isJumped() {
 		return jumped;
 	}
@@ -55,15 +60,11 @@ public class Robot {
 	}
 
 	public void moveLeft() {
-		if (!ducked) {
-			speedX = -MOVESPEED;
-		}
+		state = State.MOVINGLEFT;
 	}
 
 	public void moveRight() {
-		if (!ducked) {
-			speedX = MOVESPEED;
-		}
+		state = State.MOVINGRIGHT;
 	}
 
 	public void setCenterX(int centerX) {
@@ -74,19 +75,12 @@ public class Robot {
 		this.centerY = centerY;
 	}
 
-	public void shoot(){
+	public void shoot() {
 		projectiles.add(new Projectile(centerX + 50, centerY - 25));
 	}
 
 	public void stop() {
-		if (!movingLeft && !movingRight) {
-			speedX = 0;
-		} else if (!movingRight && movingLeft) {
-			moveLeft();
-		} else if (movingRight && !movingLeft) {
-			moveRight();
-		}
-
+		state = State.STOPPED;
 	}
 
 	public void stopLeft() {
@@ -98,6 +92,32 @@ public class Robot {
 	}
 
 	public void update() {
+
+		if (state == State.MOVINGLEFT) {
+			
+			if(speedX > 0){
+				speedX = 0;
+			}
+			
+			if (speedX - 1 < -MOVESPEED) {
+				speedX = -MOVESPEED;
+			} else {
+				speedX -= 1;
+			}
+		} else if (state == State.MOVINGRIGHT) {
+			
+			if(speedX < 0){
+				speedX = 0;
+			}
+			
+			if (speedX + 1 > MOVESPEED) {
+				speedX = MOVESPEED;
+			} else {
+				speedX += 1;
+			}
+		} else if (state == State.STOPPED){
+			speedX = 0;
+		}
 
 		if (speedX < 0) {
 			centerX += speedX;
@@ -139,6 +159,14 @@ public class Robot {
 			centerX = 61;
 		}
 
+	}
+
+	public boolean isMovingRight() {
+		return state == State.MOVINGRIGHT;
+	}
+
+	public boolean isMovingLeft() {
+		return state == State.MOVINGLEFT;
 	}
 
 }
